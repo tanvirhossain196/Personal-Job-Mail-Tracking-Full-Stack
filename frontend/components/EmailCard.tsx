@@ -159,8 +159,8 @@ export function EmailCard({
 
           {/* control strip — industrial "panel" for classifying the message */}
           <div className="mt-3 sm:mt-3.5 pt-3 sm:pt-3.5 border-t border-steel-100">
-            <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_1fr_auto] gap-2 sm:gap-2.5 rounded-md bg-fog-50 border border-steel-100 p-2 sm:p-2.5">
-              <label className="flex flex-col gap-1">
+            <div className="grid grid-cols-2 sm:grid-cols-[1fr_1fr_1fr_auto] gap-2 sm:gap-2.5 rounded-md bg-fog-50 border border-steel-100 p-2 sm:p-2.5">
+              <label className="col-span-2 sm:col-span-1 flex flex-col gap-1">
                 <span className="text-[9px] font-mono uppercase tracking-widest text-steel-300 px-0.5">
                   Category
                 </span>
@@ -201,7 +201,7 @@ export function EmailCard({
                   className="rounded-sm border border-steel-100 bg-white px-2.5 py-2 sm:py-1.5 text-xs text-ink outline-none focus:border-circuit focus:ring-1 focus:ring-circuit/30 placeholder:text-steel-300"
                 />
               </label>
-              <div className="flex items-end">
+              <div className="col-span-2 sm:col-span-1 flex items-end">
                 <button
                   onClick={handleSave}
                   disabled={!dirty && !justSaved}

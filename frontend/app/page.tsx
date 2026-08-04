@@ -249,15 +249,10 @@ export default function Home() {
         if (result.duplicate) return { duplicate: result.duplicate };
         if (result.updated) {
           setApplications((prev) =>
-            prev.map((a) =>
-              a.id === result.updated!.id ? result.updated! : a,
-            ),
+            prev.map((a) => (a.id === result.updated!.id ? result.updated! : a)),
           );
         }
-        pushToast(
-          "success",
-          `Updated ${input.companyName} — ${input.position}.`,
-        );
+        pushToast("success", `Updated ${input.companyName} — ${input.position}.`);
         setModal(null);
         return {};
       }
@@ -287,10 +282,7 @@ export default function Home() {
       );
     } catch (err) {
       console.error(err);
-      pushToast(
-        "warning",
-        "Couldn't delete — check the backend API is running.",
-      );
+      pushToast("warning", "Couldn't delete — check the backend API is running.");
     } finally {
       setPendingDelete(undefined);
     }
@@ -304,10 +296,7 @@ export default function Home() {
       }
     } catch (err) {
       console.error(err);
-      pushToast(
-        "warning",
-        "Couldn't update status — check the backend API is running.",
-      );
+      pushToast("warning", "Couldn't update status — check the backend API is running.");
     }
   };
 
@@ -322,10 +311,7 @@ export default function Home() {
       pushToast("success", "Mail classified.");
     } catch (err) {
       console.error(err);
-      pushToast(
-        "warning",
-        "Couldn't save mail tag — check the backend API is running.",
-      );
+      pushToast("warning", "Couldn't save mail tag — check the backend API is running.");
     }
   };
 
@@ -352,10 +338,7 @@ export default function Home() {
       pushToast("warning", "Cleared all logged applications.");
     } catch (err) {
       console.error(err);
-      pushToast(
-        "warning",
-        "Couldn't clear — check the backend API is running.",
-      );
+      pushToast("warning", "Couldn't clear — check the backend API is running.");
     } finally {
       setConfirmClearAll(false);
     }
@@ -403,39 +386,87 @@ export default function Home() {
         }
         categoryFilter={categoryFilter}
         onCategoryFilterChange={setCategoryFilter}
+        // Add-button + profile live INSIDE Sidebar's single fixed mobile
+        // navbar (top-right) instead of a second page-level header, so
+        // mobile only ever shows one navbar (hamburger + ROLODEX + these).
+        mobileBarRight={
+          <>
+            <button
+              onClick={handleAdd}
+              aria-label="Log application"
+              className="flex h-9 w-9 items-center justify-center rounded-sm bg-signal hover:bg-signal-600 text-ink transition-colors shrink-0"
+            >
+              <Plus size={18} strokeWidth={2.5} />
+            </button>
+            {sessionStatus === "authenticated" ? (
+              <Link
+                href="/profile"
+                aria-label="View profile"
+                className="flex h-9 w-9 items-center justify-center rounded-sm hover:bg-steel-900/60 transition-colors shrink-0"
+              >
+                {session?.user?.image ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={session.user.image}
+                    alt=""
+                    className="h-7 w-7 rounded-full shrink-0"
+                  />
+                ) : (
+                  <span className="h-7 w-7 rounded-full bg-circuit-100 text-circuit-600 flex items-center justify-center text-xs font-semibold shrink-0">
+                    {(session?.user?.name ?? session?.user?.email ?? "?")
+                      .charAt(0)
+                      .toUpperCase()}
+                  </span>
+                )}
+              </Link>
+            ) : (
+              <button
+                onClick={() => signIn("google", { callbackUrl: "/profile" })}
+                aria-label="Sign in"
+                className="flex h-9 w-9 items-center justify-center rounded-sm hover:bg-steel-900/60 transition-colors shrink-0"
+              >
+                <LogIn size={18} />
+              </button>
+            )}
+          </>
+        }
       />
 
       {/*
-        pt-14 on mobile reserves space for Sidebar's `fixed` top navbar
-        (h-14) so this column's own header renders below it instead of
-        being covered by it. lg:pt-0 removes that offset once the fixed
-        mobile bar is hidden and the real desktop sidebar takes over.
+        pt-14 on mobile reserves space for Sidebar's single `fixed` top
+        navbar (h-14). lg:pt-0 removes it once that mobile bar is hidden and
+        the real desktop sidebar + this page's own header take over.
       */}
       <div className="flex-1 min-w-0 flex flex-col pt-14 lg:pt-0">
-        <header className="sticky top-14 lg:top-0 z-20 flex items-center justify-between gap-4 border-b border-steel-100 bg-white px-4 sm:px-8 py-3.5 sm:py-4">
+        {/*
+          This header is DESKTOP-ONLY (`hidden lg:flex`). On mobile, showing
+          it too would recreate the "two navbars stacked" problem — the
+          Sidebar's fixed bar above is the only navbar mobile gets.
+        */}
+        <header className="hidden lg:flex sticky top-0 z-20 items-center justify-between gap-4 border-b border-steel-100 bg-white px-8 py-4">
           <div className="min-w-0">
-            <h1 className="font-display font-semibold text-base sm:text-lg text-ink truncate">
+            <h1 className="font-display font-semibold text-lg text-ink truncate">
               {viewTitle}
             </h1>
-            <p className="text-[11px] sm:text-xs text-steel-500 mt-0.5 truncate">
+            <p className="text-xs text-steel-500 mt-0.5 truncate">
               {overdueCount > 0
                 ? `${overdueCount} follow-up${overdueCount > 1 ? "s" : ""} due or overdue`
                 : "All follow-ups on track"}
             </p>
           </div>
-          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+          <div className="flex items-center gap-2.5 shrink-0">
             <button
               onClick={handleAdd}
-              className="inline-flex items-center gap-1.5 rounded-md bg-signal hover:bg-signal-600 text-ink font-semibold text-sm px-2.5 sm:px-3.5 py-2 transition-colors shadow-panel"
+              className="inline-flex items-center gap-1.5 rounded-md bg-signal hover:bg-signal-600 text-ink font-semibold text-sm px-3.5 py-2 transition-colors shadow-panel"
             >
               <Plus size={16} strokeWidth={2.5} />
-              <span className="hidden sm:inline">Log application</span>
+              <span>Log application</span>
             </button>
 
             {sessionStatus === "authenticated" ? (
               <Link
                 href="/profile"
-                className="flex items-center gap-2 rounded-md border border-steel-100 pl-1 pr-1.5 sm:pr-2.5 py-1 hover:bg-fog-100 transition-colors"
+                className="flex items-center gap-2 rounded-md border border-steel-100 pl-1 pr-2.5 py-1 hover:bg-fog-100 transition-colors"
                 title="View profile"
               >
                 {session?.user?.image ? (
@@ -452,17 +483,17 @@ export default function Home() {
                       .toUpperCase()}
                   </span>
                 )}
-                <span className="hidden md:block text-xs font-medium text-ink truncate max-w-[120px]">
+                <span className="block text-xs font-medium text-ink truncate max-w-[120px]">
                   {session?.user?.name ?? session?.user?.email}
                 </span>
               </Link>
             ) : (
               <button
                 onClick={() => signIn("google", { callbackUrl: "/profile" })}
-                className="inline-flex items-center gap-1.5 rounded-md border border-steel-100 px-2.5 sm:px-3 py-2 text-sm font-medium text-steel-700 hover:bg-fog-100 transition-colors"
+                className="inline-flex items-center gap-1.5 rounded-md border border-steel-100 px-3 py-2 text-sm font-medium text-steel-700 hover:bg-fog-100 transition-colors"
               >
                 <LogIn size={15} />
-                <span className="hidden sm:inline">Sign in</span>
+                <span>Sign in</span>
               </button>
             )}
           </div>
@@ -498,9 +529,7 @@ export default function Home() {
                   <div className="flex items-center justify-between px-4 sm:px-5 py-3.5 border-b border-circuit-100 bg-circuit-100/40">
                     <div className="flex items-center gap-2 text-sm font-display font-semibold text-ink">
                       <Link2 size={15} className="text-circuit shrink-0" />
-                      <span className="truncate">
-                        Matched to your applications
-                      </span>
+                      <span className="truncate">Matched to your applications</span>
                     </div>
                     <span className="text-xs font-mono text-circuit-600 bg-circuit-100 rounded-full px-2 py-0.5 shrink-0">
                       {matchedMail.length}

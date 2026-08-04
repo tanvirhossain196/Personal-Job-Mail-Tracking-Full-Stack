@@ -34,6 +34,13 @@ interface SidebarProps {
   categoryCounts: Record<EmailCategory | "Uncategorized", number>;
   categoryFilter: CategoryFilter;
   onCategoryFilterChange: (c: CategoryFilter) => void;
+  /**
+   * Rendered on the right side of the single mobile fixed top bar (e.g. the
+   * "add application" button and profile/sign-in control). Keeping these
+   * here — instead of a second header in the page — means mobile only ever
+   * shows ONE navbar.
+   */
+  mobileBarRight?: React.ReactNode;
 }
 
 const NAV_ITEMS: { key: View; label: string; icon: typeof LayoutGrid }[] = [
@@ -55,6 +62,7 @@ export function Sidebar({
   categoryCounts,
   categoryFilter,
   onCategoryFilterChange,
+  mobileBarRight,
 }: SidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -69,9 +77,11 @@ export function Sidebar({
   const showCategoriesMobile =
     view === "inbox" || view === "sent" || view === "matched";
 
+  // Nav-item clicks only change the view — they do NOT close the drawer.
+  // The drawer closes only via the X button or a backdrop click (see the
+  // mobile drawer JSX below).
   const handleMobileNav = (v: View) => {
     onViewChange(v);
-    setMobileOpen(false);
   };
 
   /** Shared body content — used by both the desktop rail and the mobile drawer. */
@@ -239,17 +249,19 @@ export function Sidebar({
             <span className="truncate">{totalCount} entries logged</span>
           </div>
         )}
-        <button
-          onClick={opts.onToggleClick}
-          title={opts.toggleLabel ?? undefined}
-          className={cn(
-            "flex items-center gap-2.5 rounded-sm px-3 py-2 text-xs font-medium text-steel-300 hover:bg-steel-900/60 hover:text-fog-50 transition-colors",
-            opts.isCollapsed && "justify-center px-0",
-          )}
-        >
-          {opts.toggleIcon}
-          {!opts.isCollapsed && opts.toggleLabel}
-        </button>
+        {opts.toggleLabel && (
+          <button
+            onClick={opts.onToggleClick}
+            title={opts.toggleLabel}
+            className={cn(
+              "flex items-center gap-2.5 rounded-sm px-3 py-2 text-xs font-medium text-steel-300 hover:bg-steel-900/60 hover:text-fog-50 transition-colors",
+              opts.isCollapsed && "justify-center px-0",
+            )}
+          >
+            {opts.toggleIcon}
+            {!opts.isCollapsed && opts.toggleLabel}
+          </button>
+        )}
       </div>
     </div>
   );
@@ -281,6 +293,11 @@ export function Sidebar({
             ROLODEX
           </span>
         </div>
+        {mobileBarRight && (
+          <div className="ml-auto flex items-center gap-2 shrink-0">
+            {mobileBarRight}
+          </div>
+        )}
       </div>
 
       {/* ---- MOBILE DRAWER: backdrop + sliding panel (same colors as desktop) ---- */}
@@ -311,24 +328,17 @@ export function Sidebar({
               isCollapsed: false,
               showCategories: showCategoriesMobile,
               onNav: handleMobileNav,
-              onExportClick: () => {
-                onExport();
-                setMobileOpen(false);
-              },
+              onExportClick: onExport,
               onClearClick: (e) => {
                 e.stopPropagation();
                 onClearAll();
-                setMobileOpen(false);
               },
-              onToggleClick: () => setMobileOpen(false),
-              toggleIcon: (
-                <PanelLeftClose
-                  size={16}
-                  strokeWidth={2}
-                  className="shrink-0"
-                />
-              ),
-              toggleLabel: "Close menu",
+              onToggleClick: () => {},
+              toggleIcon: null,
+              // null = renderBody skips the bottom toggle button entirely;
+              // the X button (top-right) and backdrop click are the only
+              // ways to close this drawer.
+              toggleLabel: null,
             })}
           </div>
         </div>
