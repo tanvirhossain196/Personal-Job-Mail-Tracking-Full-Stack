@@ -249,10 +249,15 @@ export default function Home() {
         if (result.duplicate) return { duplicate: result.duplicate };
         if (result.updated) {
           setApplications((prev) =>
-            prev.map((a) => (a.id === result.updated!.id ? result.updated! : a)),
+            prev.map((a) =>
+              a.id === result.updated!.id ? result.updated! : a,
+            ),
           );
         }
-        pushToast("success", `Updated ${input.companyName} — ${input.position}.`);
+        pushToast(
+          "success",
+          `Updated ${input.companyName} — ${input.position}.`,
+        );
         setModal(null);
         return {};
       }
@@ -282,7 +287,10 @@ export default function Home() {
       );
     } catch (err) {
       console.error(err);
-      pushToast("warning", "Couldn't delete — check the backend API is running.");
+      pushToast(
+        "warning",
+        "Couldn't delete — check the backend API is running.",
+      );
     } finally {
       setPendingDelete(undefined);
     }
@@ -296,7 +304,10 @@ export default function Home() {
       }
     } catch (err) {
       console.error(err);
-      pushToast("warning", "Couldn't update status — check the backend API is running.");
+      pushToast(
+        "warning",
+        "Couldn't update status — check the backend API is running.",
+      );
     }
   };
 
@@ -311,7 +322,10 @@ export default function Home() {
       pushToast("success", "Mail classified.");
     } catch (err) {
       console.error(err);
-      pushToast("warning", "Couldn't save mail tag — check the backend API is running.");
+      pushToast(
+        "warning",
+        "Couldn't save mail tag — check the backend API is running.",
+      );
     }
   };
 
@@ -338,7 +352,10 @@ export default function Home() {
       pushToast("warning", "Cleared all logged applications.");
     } catch (err) {
       console.error(err);
-      pushToast("warning", "Couldn't clear — check the backend API is running.");
+      pushToast(
+        "warning",
+        "Couldn't clear — check the backend API is running.",
+      );
     } finally {
       setConfirmClearAll(false);
     }
@@ -481,7 +498,9 @@ export default function Home() {
                   <div className="flex items-center justify-between px-4 sm:px-5 py-3.5 border-b border-circuit-100 bg-circuit-100/40">
                     <div className="flex items-center gap-2 text-sm font-display font-semibold text-ink">
                       <Link2 size={15} className="text-circuit shrink-0" />
-                      <span className="truncate">Matched to your applications</span>
+                      <span className="truncate">
+                        Matched to your applications
+                      </span>
                     </div>
                     <span className="text-xs font-mono text-circuit-600 bg-circuit-100 rounded-full px-2 py-0.5 shrink-0">
                       {matchedMail.length}
