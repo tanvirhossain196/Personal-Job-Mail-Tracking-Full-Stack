@@ -314,11 +314,7 @@ export function Sidebar({
               },
               onToggleClick: () => setMobileOpen(false),
               toggleIcon: (
-                <PanelLeftClose
-                  size={16}
-                  strokeWidth={2}
-                  className="shrink-0"
-                />
+                <PanelLeftClose size={16} strokeWidth={2} className="shrink-0" />
               ),
               toggleLabel: "Close menu",
             })}

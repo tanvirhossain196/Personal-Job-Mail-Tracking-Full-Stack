@@ -8,7 +8,6 @@ import {
   Briefcase,
   CheckCircle2,
   Clock3,
-  Menu,
   Mail,
   LogIn,
   ChevronRight,
@@ -72,7 +71,6 @@ export default function Home() {
   >();
   const [confirmClearAll, setConfirmClearAll] = useState(false);
   const [toasts, setToasts] = useState<ToastItem[]>([]);
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<ApplicationStatus | "All">(
@@ -358,14 +356,23 @@ export default function Home() {
     analytics: "Analytics",
   }[view];
 
+  // Single source of truth for view changes — passed straight into
+  // <Sidebar onViewChange={changeView} />. Sidebar's own mobile drawer
+  // handles opening/closing itself, so this only needs to reset the
+  // category filter when switching views.
   const changeView = (v: View) => {
     setView(v);
     setCategoryFilter("All");
-    setMobileNavOpen(false);
   };
 
   return (
     <div className="min-h-screen flex bg-fog-50">
+      {/*
+        Sidebar now owns ALL mobile navigation (hamburger trigger + slide-in
+        drawer with nav items and category sub-rows, matching desktop 1:1).
+        Do NOT add a second mobile nav/hamburger in this page — that was the
+        cause of the broken/duplicate mobile nav before.
+      */}
       <Sidebar
         view={view}
         onViewChange={changeView}
@@ -382,30 +389,21 @@ export default function Home() {
       />
 
       <div className="flex-1 min-w-0 flex flex-col">
-        <header className="sticky top-0 z-30 flex items-center justify-between gap-4 border-b border-steel-100 bg-white px-5 sm:px-8 py-4">
-          <div className="flex items-center gap-3 min-w-0">
-            <button
-              className="lg:hidden text-steel-700"
-              onClick={() => setMobileNavOpen((v) => !v)}
-              aria-label="Toggle navigation"
-            >
-              <Menu size={20} />
-            </button>
-            <div className="min-w-0">
-              <h1 className="font-display font-semibold text-lg text-ink truncate">
-                {viewTitle}
-              </h1>
-              <p className="text-xs text-steel-500 mt-0.5">
-                {overdueCount > 0
-                  ? `${overdueCount} follow-up${overdueCount > 1 ? "s" : ""} due or overdue`
-                  : "All follow-ups on track"}
-              </p>
-            </div>
+        <header className="sticky top-0 z-20 flex items-center justify-between gap-4 border-b border-steel-100 bg-white px-4 sm:px-8 py-3.5 sm:py-4">
+          <div className="min-w-0">
+            <h1 className="font-display font-semibold text-base sm:text-lg text-ink truncate">
+              {viewTitle}
+            </h1>
+            <p className="text-[11px] sm:text-xs text-steel-500 mt-0.5 truncate">
+              {overdueCount > 0
+                ? `${overdueCount} follow-up${overdueCount > 1 ? "s" : ""} due or overdue`
+                : "All follow-ups on track"}
+            </p>
           </div>
-          <div className="flex items-center gap-2.5 shrink-0">
+          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
             <button
               onClick={handleAdd}
-              className="inline-flex items-center gap-1.5 rounded-md bg-signal hover:bg-signal-600 text-ink font-semibold text-sm px-3.5 py-2 transition-colors shadow-panel"
+              className="inline-flex items-center gap-1.5 rounded-md bg-signal hover:bg-signal-600 text-ink font-semibold text-sm px-2.5 sm:px-3.5 py-2 transition-colors shadow-panel"
             >
               <Plus size={16} strokeWidth={2.5} />
               <span className="hidden sm:inline">Log application</span>
@@ -414,7 +412,7 @@ export default function Home() {
             {sessionStatus === "authenticated" ? (
               <Link
                 href="/profile"
-                className="flex items-center gap-2 rounded-md border border-steel-100 pl-1 pr-2.5 py-1 hover:bg-fog-100 transition-colors"
+                className="flex items-center gap-2 rounded-md border border-steel-100 pl-1 pr-1.5 sm:pr-2.5 py-1 hover:bg-fog-100 transition-colors"
                 title="View profile"
               >
                 {session?.user?.image ? (
@@ -438,7 +436,7 @@ export default function Home() {
             ) : (
               <button
                 onClick={() => signIn("google", { callbackUrl: "/profile" })}
-                className="inline-flex items-center gap-1.5 rounded-md border border-steel-100 px-3 py-2 text-sm font-medium text-steel-700 hover:bg-fog-100 transition-colors"
+                className="inline-flex items-center gap-1.5 rounded-md border border-steel-100 px-2.5 sm:px-3 py-2 text-sm font-medium text-steel-700 hover:bg-fog-100 transition-colors"
               >
                 <LogIn size={15} />
                 <span className="hidden sm:inline">Sign in</span>
@@ -447,51 +445,10 @@ export default function Home() {
           </div>
         </header>
 
-        {mobileNavOpen && (
-          <div className="lg:hidden flex flex-wrap items-center gap-2 border-b border-steel-100 bg-white px-5 py-2.5">
-            <button
-              onClick={() => changeView("dashboard")}
-              className="text-xs font-medium text-steel-700 px-2.5 py-1 rounded-sm hover:bg-fog-100"
-            >
-              Dashboard
-            </button>
-            <button
-              onClick={() => changeView("inbox")}
-              className="text-xs font-medium text-steel-700 px-2.5 py-1 rounded-sm hover:bg-fog-100"
-            >
-              Inbox
-            </button>
-            <button
-              onClick={() => changeView("sent")}
-              className="text-xs font-medium text-steel-700 px-2.5 py-1 rounded-sm hover:bg-fog-100"
-            >
-              Sent
-            </button>
-            <button
-              onClick={() => changeView("matched")}
-              className="text-xs font-medium text-steel-700 px-2.5 py-1 rounded-sm hover:bg-fog-100"
-            >
-              Matched
-            </button>
-            <button
-              onClick={() => changeView("analytics")}
-              className="text-xs font-medium text-steel-700 px-2.5 py-1 rounded-sm hover:bg-fog-100"
-            >
-              Analytics
-            </button>
-            <button
-              onClick={handleExport}
-              className="text-xs font-medium text-steel-700 px-2.5 py-1 rounded-sm hover:bg-fog-100"
-            >
-              Export CSV
-            </button>
-          </div>
-        )}
-
-        <main className="flex-1 px-5 sm:px-8 py-6 flex flex-col gap-5">
+        <main className="flex-1 px-4 sm:px-8 py-5 sm:py-6 flex flex-col gap-4 sm:gap-5">
           {view === "dashboard" && (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                 <StatCard
                   label="Total applications"
                   value={applications.length}
@@ -515,17 +472,17 @@ export default function Home() {
 
               {sessionStatus === "authenticated" && (
                 <div className="bg-white border border-circuit-100 rounded-lg shadow-panel overflow-hidden">
-                  <div className="flex items-center justify-between px-5 py-3.5 border-b border-circuit-100 bg-circuit-100/40">
+                  <div className="flex items-center justify-between px-4 sm:px-5 py-3.5 border-b border-circuit-100 bg-circuit-100/40">
                     <div className="flex items-center gap-2 text-sm font-display font-semibold text-ink">
-                      <Link2 size={15} className="text-circuit" />
-                      Matched to your applications
+                      <Link2 size={15} className="text-circuit shrink-0" />
+                      <span className="truncate">Matched to your applications</span>
                     </div>
-                    <span className="text-xs font-mono text-circuit-600 bg-circuit-100 rounded-full px-2 py-0.5">
+                    <span className="text-xs font-mono text-circuit-600 bg-circuit-100 rounded-full px-2 py-0.5 shrink-0">
                       {matchedMail.length}
                     </span>
                   </div>
                   {matchedMail.length === 0 ? (
-                    <div className="px-5 py-6 text-sm text-steel-500 text-center">
+                    <div className="px-4 sm:px-5 py-6 text-sm text-steel-500 text-center">
                       No matched mail found yet — this fills in once an incoming
                       email&apos;s company or email address matches one of your
                       logged applications.
@@ -536,7 +493,7 @@ export default function Home() {
                         <button
                           key={r.id}
                           onClick={() => changeView("matched")}
-                          className="w-full flex items-center justify-between gap-3 px-5 py-3 text-left hover:bg-fog-100 transition-colors"
+                          className="w-full flex items-center justify-between gap-3 px-4 sm:px-5 py-3 text-left hover:bg-fog-100 transition-colors"
                         >
                           <div className="min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
@@ -564,12 +521,12 @@ export default function Home() {
 
               {sessionStatus === "authenticated" && (
                 <div className="bg-white border border-steel-100 rounded-lg shadow-panel">
-                  <div className="flex items-center justify-between px-5 py-3.5 border-b border-steel-100">
-                    <div className="flex items-center gap-2 text-sm font-display font-semibold text-ink">
-                      <Mail size={15} className="text-circuit" />
-                      Recent incoming mail
+                  <div className="flex items-center justify-between gap-2 px-4 sm:px-5 py-3.5 border-b border-steel-100">
+                    <div className="flex items-center gap-2 text-sm font-display font-semibold text-ink min-w-0">
+                      <Mail size={15} className="text-circuit shrink-0" />
+                      <span className="truncate">Recent incoming mail</span>
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-steel-500">
+                    <div className="flex items-center gap-2 text-xs text-steel-500 shrink-0">
                       <span
                         className={
                           mailLoading
@@ -577,15 +534,17 @@ export default function Home() {
                             : "h-1.5 w-1.5 rounded-full bg-success"
                         }
                       />
-                      {mailLoading
-                        ? "Syncing…"
-                        : lastSyncedAt
-                          ? `Synced ${timeAgo(lastSyncedAt)}`
-                          : "Waiting to sync"}
+                      <span className="hidden xs:inline sm:inline">
+                        {mailLoading
+                          ? "Syncing…"
+                          : lastSyncedAt
+                            ? `Synced ${timeAgo(lastSyncedAt)}`
+                            : "Waiting to sync"}
+                      </span>
                     </div>
                   </div>
                   {unmatchedRecentMail.length === 0 ? (
-                    <div className="px-5 py-6 text-sm text-steel-500 text-center">
+                    <div className="px-4 sm:px-5 py-6 text-sm text-steel-500 text-center">
                       No job-related mail found yet.
                     </div>
                   ) : (
@@ -594,7 +553,7 @@ export default function Home() {
                         <button
                           key={r.id}
                           onClick={() => changeView("inbox")}
-                          className="w-full flex items-center justify-between gap-3 px-5 py-3 text-left hover:bg-fog-100 transition-colors"
+                          className="w-full flex items-center justify-between gap-3 px-4 sm:px-5 py-3 text-left hover:bg-fog-100 transition-colors"
                         >
                           <div className="min-w-0">
                             <div className="text-sm font-medium text-ink truncate">
@@ -616,9 +575,9 @@ export default function Home() {
               )}
 
               {applications.length > 0 && (
-                <div className="bg-white border border-steel-100 rounded-lg shadow-panel px-5 py-4">
+                <div className="bg-white border border-steel-100 rounded-lg shadow-panel px-4 sm:px-5 py-4">
                   <div className="flex items-center gap-2 text-sm font-display font-semibold text-ink mb-3">
-                    <LayoutGrid size={15} className="text-circuit" />
+                    <LayoutGrid size={15} className="text-circuit shrink-0" />
                     Applying by domain
                   </div>
                   <div className="flex flex-wrap gap-2">
