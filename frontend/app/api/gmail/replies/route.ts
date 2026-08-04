@@ -123,7 +123,7 @@ export async function GET(req: NextRequest) {
       // Bumped up since the query is broader now (no keyword pre-filter),
       // and the UI paginates 40 at a time — pull a deep enough pool that
       // "See more" has real pages to reveal across the full 120-day window.
-      maxResults: 150,
+      maxResults: 40,
     });
 
     const messages = list.data.messages ?? [];
@@ -132,10 +132,15 @@ export async function GET(req: NextRequest) {
     // what makes sync feel fast. Sequential fetching of 25 messages could
     // take several seconds; in parallel it's bound by the single slowest
     // request instead of the sum of all of them.
-    const fetched = await Promise.all(
-      messages
-        .filter((m) => m.id)
-        .map(async (m) => {
+    const validMessages = messages.filter((m) => m.id);
+    const fetched = [];
+    const BATCH_SIZE = 10;
+
+    for (let i = 0; i < validMessages.length; i += BATCH_SIZE) {
+      const batch = validMessages.slice(i, i + BATCH_SIZE);
+
+      const batchResults = await Promise.all(
+        batch.map(async (m) => {
           const msg = await gmail.users.messages.get({
             userId: "me",
             id: m.id as string,
@@ -149,9 +154,6 @@ export async function GET(req: NextRequest) {
           const snippet = msg.data.snippet ?? "";
           const body = extractBody(msg.data.payload as GmailPart) || snippet;
           const dateHeader = decodeHeader(headers, "Date");
-          const receivedAt = dateHeader
-            ? new Date(dateHeader).toISOString()
-            : new Date().toISOString();
 
           return {
             id: m.id as string,
@@ -160,10 +162,15 @@ export async function GET(req: NextRequest) {
             subject,
             snippet,
             body,
-            receivedAt,
+            receivedAt: dateHeader
+              ? new Date(dateHeader).toISOString()
+              : new Date().toISOString(),
           };
         }),
-    );
+      );
+
+      fetched.push(...batchResults);
+    }
 
     // Classify every message purely by keyword matching — reads the full
     // subject + snippet + body (not just isolated words) before deciding
