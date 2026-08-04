@@ -13,6 +13,25 @@ import { styleForCategory } from "@/lib/categoryStyle";
 import { cn, formatDate } from "@/lib/utils";
 import { MailViewModal } from "./MailViewModal";
 
+/**
+ * Date + 12-hour time with AM/PM, e.g. "Aug 2, 2026, 3:45 PM".
+ * `formatDate` (from lib/utils) only shows the date, so this is a local
+ * helper just for the timestamps on this card — doesn't touch the shared
+ * util or any other place that relies on the date-only format.
+ */
+function formatDateTime(value: string | number | Date) {
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return formatDate(value as string);
+  return d.toLocaleString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+}
+
 interface EmailCardProps {
   reply: GmailReply;
   folder: MailFolder;
@@ -229,10 +248,10 @@ export function EmailCard({
           </div>
 
           <div className="flex items-center justify-between mt-2.5 text-[10px] sm:text-[11px] text-steel-300 font-mono gap-2">
-            <span className="truncate">{formatDate(reply.receivedAt)}</span>
+            <span className="truncate">{formatDateTime(reply.receivedAt)}</span>
             {meta?.updatedAt && (
               <span className="truncate shrink-0">
-                classified {formatDate(meta.updatedAt)}
+                classified {formatDateTime(meta.updatedAt)}
               </span>
             )}
           </div>
