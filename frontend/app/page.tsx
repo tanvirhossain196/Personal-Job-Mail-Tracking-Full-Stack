@@ -388,8 +388,14 @@ export default function Home() {
         onCategoryFilterChange={setCategoryFilter}
       />
 
-      <div className="flex-1 min-w-0 flex flex-col">
-        <header className="sticky top-0 z-20 flex items-center justify-between gap-4 border-b border-steel-100 bg-white px-4 sm:px-8 py-3.5 sm:py-4">
+      {/*
+        pt-14 on mobile reserves space for Sidebar's `fixed` top navbar
+        (h-14) so this column's own header renders below it instead of
+        being covered by it. lg:pt-0 removes that offset once the fixed
+        mobile bar is hidden and the real desktop sidebar takes over.
+      */}
+      <div className="flex-1 min-w-0 flex flex-col pt-14 lg:pt-0">
+        <header className="sticky top-14 lg:top-0 z-20 flex items-center justify-between gap-4 border-b border-steel-100 bg-white px-4 sm:px-8 py-3.5 sm:py-4">
           <div className="min-w-0">
             <h1 className="font-display font-semibold text-base sm:text-lg text-ink truncate">
               {viewTitle}

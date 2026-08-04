@@ -256,8 +256,16 @@ export function Sidebar({
 
   return (
     <>
-      {/* ---- MOBILE TOP BAR: hamburger trigger (visible below lg) ---- */}
-      <div className="lg:hidden sticky top-0 z-30 flex items-center gap-3 bg-ink text-fog-50 px-3 py-2.5 border-b border-steel-700/60">
+      {/*
+        ---- MOBILE TOP BAR: hamburger trigger (visible below lg) ----
+        Must be `fixed`, not `sticky`/`static`. This component renders as a
+        sibling of the desktop <aside> inside a parent `flex` row (see
+        page.tsx). A `sticky` element still participates in flex layout as a
+        column and gets stretched to full height by `align-items: stretch`.
+        `fixed` removes it from flex layout entirely so it floats as a real
+        top navbar instead of a phantom stretched sidebar.
+      */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 h-14 flex items-center gap-3 bg-ink text-fog-50 px-3 border-b border-steel-700/60">
         <button
           onClick={() => setMobileOpen(true)}
           aria-label="Open menu"
@@ -314,7 +322,11 @@ export function Sidebar({
               },
               onToggleClick: () => setMobileOpen(false),
               toggleIcon: (
-                <PanelLeftClose size={16} strokeWidth={2} className="shrink-0" />
+                <PanelLeftClose
+                  size={16}
+                  strokeWidth={2}
+                  className="shrink-0"
+                />
               ),
               toggleLabel: "Close menu",
             })}
